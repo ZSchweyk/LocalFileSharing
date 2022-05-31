@@ -11,7 +11,7 @@ from os.path import isfile, isdir, join
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "thisisasecret"
-app.config["UPLOADED_IMAGES_DEST"] = "/home/pi/projects/LocalFileSharing/Uploads/"
+app.config["UPLOADED_IMAGES_DEST"] = "/home/pi/FileUploads/"
 
 
 images = UploadSet("images", IMAGES)
