@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, flash, render_template, request, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 from os import listdir
 import os
@@ -9,7 +9,14 @@ import os.path
 app = Flask(__name__)
 
 app.config["UPLOAD_FOLDER"] = "/home/pi/FileUploads/"
-app.config['UPLOAD_EXTENSIONS'] = (".jpg", ".txt", ".png", ".pdf")
+app.config['UPLOAD_EXTENSIONS'] = (".jpg", ".txt", ".png", ".pdf", ".docx", ".jpeg", ".mscz", ".xlsx", ".qdf")
+app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
+
+def has_valid_extension(filename):
+    file_ext = os.path.splitext(filename)[1]
+    if file_ext.lower() in app.config['UPLOAD_EXTENSIONS']:
+        return True
+    return False
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -17,15 +24,16 @@ def upload_file():
     if request.method == "POST":
         f = request.files['file']
         filename = secure_filename(f.filename)
-
-        f.save(app.config['UPLOAD_FOLDER'] + filename)
+        if has_valid_extension(filename):
+            f.save(app.config['UPLOAD_FOLDER'] + filename)
+        else:
+            flash("File extension \"" + os.path.splitext(filename)[1] + "\" not allowed")
 
     all_files = []
     for child in listdir(app.config["UPLOAD_FOLDER"]):
         filename = join(app.config["UPLOAD_FOLDER"], child)
         if isfile(filename):
-            file_ext = os.path.splitext(filename)[1]
-            if file_ext in app.config['UPLOAD_EXTENSIONS']:
+            if has_valid_extension(filename):
                 all_files.append(child)
 
     return render_template('index.html', all_files=all_files)
