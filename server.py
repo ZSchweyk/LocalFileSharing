@@ -28,16 +28,6 @@ class MyForm(FlaskForm):
 def upload():
     form = MyForm()
 
-    if form.validate_on_submit():
-        print(form.image.data)
-        filename = images.save(form.image.data)
-        return redirect(url_for("files"))
-
-    return render_template("upload.html", form=form)
-
-
-@app.route("/files", methods=["GET", "POST"])
-def files():
     all_files = []
     for child in listdir(app.config["UPLOADED_IMAGES_DEST"]):
         if isfile(join(app.config["UPLOADED_IMAGES_DEST"], child)):
@@ -46,7 +36,27 @@ def files():
     print("rendering files.html template")
     print(all_files)
     print(datetime.datetime.now().strftime("%I:%M:%S %p"))
-    return render_template("files.html", all_files=all_files)
+
+
+    if form.validate_on_submit():
+        print(form.image.data)
+        filename = images.save(form.image.data)
+        return redirect(url_for("upload"))
+
+    return render_template("upload.html", form=form, all_files=all_files)
+
+
+# @app.route("/files", methods=["GET", "POST"])
+# def files():
+#     all_files = []
+#     for child in listdir(app.config["UPLOADED_IMAGES_DEST"]):
+#         if isfile(join(app.config["UPLOADED_IMAGES_DEST"], child)):
+#             all_files.append(child)
+#
+#     print("rendering files.html template")
+#     print(all_files)
+#     print(datetime.datetime.now().strftime("%I:%M:%S %p"))
+#     return render_template("files.html", all_files=all_files)
 
 
 @app.route("/download")
