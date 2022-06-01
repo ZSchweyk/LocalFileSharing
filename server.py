@@ -1,70 +1,29 @@
-import datetime
-
-from flask import Flask, send_file, render_template, request, redirect, url_for, session
-from flask_wtf import FlaskForm
-from wtforms import FileField
-from flask_uploads import configure_uploads, IMAGES, UploadSet
-from os import listdir
-from os.path import isfile, isdir, join
-
-
+from flask import Flask, render_template, request
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "thisisasecret"
-app.config["UPLOADED_IMAGES_DEST"] = "/home/pi/FileUploads/"
+
+app.config["UPLOAD_FOLDER"] = "/home/pi/FileUploads/"
 
 
-images = UploadSet("images", IMAGES)
-configure_uploads(app, images)
+@app.route('/')
+def upload_file():
+    return render_template('index.html')
 
 
-class MyForm(FlaskForm):
-    image = FileField("image")
+@app.route('/display', methods=['GET', 'POST'])
+def display_file():
+    if request.method == 'POST':
+        f = request.files['file']
+        filename = secure_filename(f.filename)
+
+        f.save(app.config['UPLOAD_FOLDER'] + filename)
+
+        file = open(app.config['UPLOAD_FOLDER'] + filename, "r")
+        content = file.read()
+
+    return render_template('content.html', content=content)
 
 
-
-
-@app.route("/", methods=["GET", "POST"])
-def upload():
-    form = MyForm()
-
-    all_files = []
-    for child in listdir(app.config["UPLOADED_IMAGES_DEST"]):
-        if isfile(join(app.config["UPLOADED_IMAGES_DEST"], child)):
-            all_files.append(child)
-
-    print("rendering files.html template")
-    print(all_files)
-    print(datetime.datetime.now().strftime("%I:%M:%S %p"))
-
-
-    if form.validate_on_submit():
-        print(form.image.data)
-        filename = images.save(form.image.data)
-        return redirect(url_for("upload"))
-
-    return render_template("upload.html", form=form, all_files=all_files)
-
-
-# @app.route("/files", methods=["GET", "POST"])
-# def files():
-#     all_files = []
-#     for child in listdir(app.config["UPLOADED_IMAGES_DEST"]):
-#         if isfile(join(app.config["UPLOADED_IMAGES_DEST"], child)):
-#             all_files.append(child)
-#
-#     print("rendering files.html template")
-#     print(all_files)
-#     print(datetime.datetime.now().strftime("%I:%M:%S %p"))
-#     return render_template("files.html", all_files=all_files)
-
-
-@app.route("/download")
-def download():
-    file = request.args["file"]
-    return send_file(join(app.config["UPLOADED_IMAGES_DEST"], file), as_attachment=True)
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
-
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000, debug=True)
