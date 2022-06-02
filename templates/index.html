@@ -24,13 +24,16 @@
       {% for file in all_files %}
         <li>
 
-            <a href="{{ url_for('delete', filename=file) }}">
+            <a href="{{ url_for('delete', filename=file.name) }}">
                 <img class="mb-4" src="{{ url_for('static', filename='images/trash_can.jpg') }}" width="30" height="30" alt="delete">
             </a>
 
-          <a href="{{ url_for('download', file=file) }}">
-              {{ file }}
+          <a href="{{ url_for('download', file=file.name) }}">
+              {{ file.name }}
           </a>
+
+          ({{ file.size }} KB)
+
         </li>
       {% endfor %}
     </ul>

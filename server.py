@@ -12,6 +12,13 @@ app.config["UPLOAD_FOLDER"] = "/home/pi/FileUploads/"
 app.config['UPLOAD_EXTENSIONS'] = (".jpg", ".txt", ".png", ".pdf", ".docx", ".jpeg", ".mscz", ".xlsx", ".qdf")
 app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 
+
+class File:
+    def __init__(self, name, size):
+        self.name = name
+        self.size = size
+
+
 def has_valid_extension(filename):
     file_ext = os.path.splitext(filename)[1]
     if file_ext.lower() in app.config['UPLOAD_EXTENSIONS']:
@@ -34,7 +41,7 @@ def upload_file():
         filename = join(app.config["UPLOAD_FOLDER"], child)
         if isfile(filename):
             if has_valid_extension(filename):
-                all_files.append(child)
+                all_files.append(File(child, round(os.path.getsize(filename) / 1000, 1)))
 
     return render_template('index.html', all_files=all_files)
 
